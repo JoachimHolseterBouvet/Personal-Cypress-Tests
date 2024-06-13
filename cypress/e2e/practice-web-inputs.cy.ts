@@ -1,3 +1,5 @@
+import { random } from "lodash"
+
 // Define the debug mode boolean at the top level
 const debugMode2 = false // Set to true for debug mode, false to disable
 
@@ -10,7 +12,7 @@ const debugWait2 = () => {
 
 describe("Go through all examples on site", () => {
   beforeEach(() => {
-    cy.visit("https://practice.expandtesting.com/")
+   cy.visit("https://practice.expandtesting.com/")
   })
 
   context("Inputs test", () => {
@@ -18,7 +20,7 @@ describe("Go through all examples on site", () => {
       cy.get('a[href="/inputs"]').should("be.visible").click()
       cy.get('button[id="btn-clear-inputs"]').should("be.visible").click()
       debugWait2()
-      cy.get('input[id="input-number"]').focus().type("5982")
+      cy.get('input[id="input-number"]').focus().type("A5982")
       debugWait2()
       cy.get('input[id="input-text"]').focus().type("Joachim Holseter")
       debugWait2()
@@ -27,6 +29,21 @@ describe("Go through all examples on site", () => {
       cy.get('input[id="input-date"]').focus().type("1997-02-17")
       debugWait2()
       cy.get('button[id="btn-display-inputs"]').click()
+      debugWait2()
+      cy.get("#output-number").should("be.visible").should("have.text", "5982")
+      debugWait2()
+      cy.get("#output-text")
+        .should("be.visible")
+        .should("have.text", "Joachim Holseter")
+      debugWait2()
+      cy.get("#output-password")
+        .should("be.visible")
+        .should("have.text", "SQAD")
+      debugWait2()
+      cy.get("#output-date")
+        .should("be.visible")
+        .should("have.text", "1997-02-17")
+      debugWait2()
       cy.log("Inputs test passed")
       debugWait2()
     })
@@ -238,24 +255,31 @@ describe("Go through all examples on site", () => {
     })
   })
 
-  // context("Check API response", () => {
-  //   it.only('should successfully make a GET request', () => {
-  //     // Set up intercept before making the request
-  //     cy.intercept("GET", "/api/health-check", {
-  //       statusCode: 200,
-  //       body: {
-  //         status: "UP",
-  //       },
-  //     }).as("getHealthCheck");
+  context("Simple API response checks", () => {
+    it('Check health API', () => {
+      // Intercept the health check API request
+      cy.intercept('GET', '/api/health-check').as('healthCheckRequest');
   
-  //     // Trigger the API request by visiting the URL
-  //     cy.request("/api/health-check").as("healthCheckRequest");
+      // Make the API request directly
+      cy.request('/api/health-check').then((response) => {
+        // Assert on the status and body of the response
+        expect(response.status).to.eq(200);
+        expect(response.body.status).to.eq('UP');
+        expect(response.body.message).to.eq('API is up!');
+      });
+    });
+
+    it('Check IP API', () => {
+      // Intercept the IP API request
+      cy.intercept('GET', '/api/my-ip').as('ipCheckRequest');
   
-  //     // Verify the API response
-  //     cy.get("@healthCheckRequest").then((response) => {
-  //       expect(response.status).to.eq(200);
-  //       expect(response.body.status).to.eq("UP");
-  //     });
-  //   });
-  // });
+      // Make the API request directly
+      cy.request('/api/my-ip').then((response) => {
+        // Assert on the status and body of the response
+        expect(response.status).to.eq(200);
+        cy.log("User is in "+response.body.city+", "+response.body.country+". Their IP is: "+response.body.ip);
+      });
+    });
+  });
+  
 })
