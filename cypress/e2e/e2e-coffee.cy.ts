@@ -1,7 +1,18 @@
-// Define the debug mode boolean at the top level
+/* 
+Automated E2E test of "Coffee Cart", an example webshop created for use with automated testing.
+This is just an example to show how E2E testing with Cypress can be done.
+Documentation can be found here: https://coffee-cart.app/github.
+Created by Joachim Holseter, Bouvet SQAD, June 2024.
+*/
+
+
+
+
+// Enable this bool to get a 500ms delay between actions to better observe what's happening.
+// This might be silly to do in a real test.
+
 const debugMode = false; // Set to true for debug mode, false to disable
 
-// Helper function for conditional wait
 const debugWait = () => {
   if (debugMode) {
     cy.wait(500); // Adjust the wait time as needed
@@ -13,6 +24,7 @@ describe("Full E2E test", () => {
     cy.visit("https://coffee-cart.app/");
   });
 
+  // Before starting, we check that all content exists and that the names of the header buttons are correct.
   context("Check site content", () => {
     it("The header includes all elements.", () => {
       cy.get("[aria-label='Menu page']").should("exist").contains("menu");
@@ -23,6 +35,7 @@ describe("Full E2E test", () => {
       debugWait();
     });
 
+    // We test that the buttons in the header work and navigates to the correct URL.
     it("The header buttons work.", () => {
       cy.get("[aria-label='Cart page']").click();
       debugWait();
@@ -40,11 +53,13 @@ describe("Full E2E test", () => {
       debugWait();
     });
 
+    // We check that the parent element of the coffee-items has children.
     it("Check that there is content visible", () => {
       cy.get("ul[data-v-a9662a08] li").should("have.length.greaterThan", 0);
       debugWait();
     });
 
+    // Validate that all coffee-items has a name and a price
     it("Loop through each coffee item and check the name and price", () => {
       cy.get("ul[data-v-a9662a08] li")
         .should("have.length.greaterThan", 0)
@@ -79,6 +94,8 @@ describe("Full E2E test", () => {
     });
   });
 
+
+  // Next we go through the checkout process. We add 10 random coffees to the cart, accepting and declining the promo offer with a flip flop each time it shows up.
   context("Add items and check out", () => {
     it("Randomly adds coffees to the cart and goes through checkout", () => {
       let flipFlop = true;
@@ -109,7 +126,7 @@ describe("Full E2E test", () => {
         });
       });
 
-      cy.log("Check that total != zero if cart has more that 0 items");
+      cy.log("Check that total does not equal zero if cart has more that 0 items");
       debugWait();
 
       // Get the cart items count
@@ -177,7 +194,7 @@ describe("Full E2E test", () => {
           checkAndChangeTotal('button[aria-label*="Remove all"]', "Deleting item");
           debugWait();
 
-          // Proceed to checkout
+          // Click checkout information and fill in requred fields
           cy.get("[aria-label='Proceed to checkout']").click();
           debugWait();
           cy.get('input[id="name"]').type("John Doe");
